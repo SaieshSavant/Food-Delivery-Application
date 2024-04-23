@@ -41,7 +41,6 @@ router.post("/createuser",
 
 router.post("/loginuser",
       [body('email', 'Enter a valid email').isEmail(),
-      // password must be at least 5 chars long
       body('password', 'Incorrect password').isLength({ min: 5 })]
       , async (req, res) => {
 

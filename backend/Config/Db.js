@@ -55,4 +55,5 @@ const mongodb = async () => {
   })
 }
 
+mongoose.set('strictQuery', false);
 module.exports = mongodb;
