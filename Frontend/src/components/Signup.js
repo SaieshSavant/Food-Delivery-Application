@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Link , useNavigate} from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import Cookies from 'js-cookie'; // Import Cookies library
 
 export default function Signup() {
     const [credentials, setCredentials] = useState({ name: "", email: "", password: "", geolocation: "" });
@@ -13,7 +14,7 @@ export default function Signup() {
         navigator.geolocation.getCurrentPosition((position) => {
             const { latitude, longitude } = position.coords;
             const location = `Latitude: ${latitude}, Longitude: ${longitude}`;
-            
+
             // Make API call to create user with the fetched location
             fetch("http://localhost:4000/api/createuser", {
                 method: 'POST',
@@ -22,24 +23,24 @@ export default function Signup() {
                 },
                 body: JSON.stringify({ name, email, password, location })
             })
-            .then(response => response.json())
-            .then(json => {
-                console.log(json);
-                if (json.success) {
-                    localStorage.setItem("authToken", json.authToken);
-                    console.log(localStorage.getItem("authToken"));
-                    navigate("/");
-                } else {
-                    alert("Enter valid credentials");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Error creating user");
-            });
+                .then(response => response.json())
+                .then(json => {
+                    console.log(json);
+                    if (json.success) {
+                        Cookies.set("authToken", json.authToken, { expires: 7 }); // Set authToken cookie with expiry of 7 days
+                        console.log(Cookies.get("authToken"));
+                        navigate("/");
+                    } else {
+                        alert("Enter valid credentials");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Error creating user");
+                });
         });
     };
-    
+
     const handleLocationClick = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -64,9 +65,9 @@ export default function Signup() {
     };
 
     return (
-        <div className='container' style={{backgroundImage:'url("https://img.freepik.com/premium-photo/food-background-cooking-old-background-free-copy-space-top-view_187166-30740.jpg")', height: '100vh', backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition:"center", maxWidth:"1600px" }}>
-            <form onSubmit={handleSubmit} style={{marginLeft:"500px"}}>
-                <div className="mb-3" style={{paddingTop:"70px"}}>
+        <div className='container' style={{ backgroundImage: 'url("https://img.freepik.com/premium-photo/food-background-cooking-old-background-free-copy-space-top-view_187166-30740.jpg")', height: '100vh', backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: "center", maxWidth: "1600px" }}>
+            <form onSubmit={handleSubmit} style={{ marginLeft: "500px" }}>
+                <div className="mb-3" style={{ paddingTop: "70px" }}>
                     <label htmlFor="name" style={{ color: 'white' }} className="form-label">Name</label>
                     <input type="text" className="form-control white-text" style={{ backgroundColor: "black", color: "white", width: "540px" }} name='name' value={credentials.name} onChange={handleChange} />
                 </div>

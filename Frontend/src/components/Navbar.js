@@ -1,13 +1,14 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../components/CartContext'; // Import CartContext
+import Cookies from 'js-cookie'; // Import Cookies library
 
 export default function Navbar() {
   const { cartItems } = useContext(CartContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    Cookies.remove("authToken"); // Remove authToken from Cookies
     navigate("/Login");
   };
 
@@ -16,7 +17,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark " style={{backgroundColor:"#331800"}}>
+    <nav className="navbar navbar-expand-lg navbar-dark " style={{ backgroundColor: "#331800" }}>
       <div className="container-fluid">
         <Link className="navbar-brand fs-10" to="/">Go Food</Link>
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,13 +28,13 @@ export default function Navbar() {
             <li className="nav-item">
               <Link className="nav-link active fs-5" aria-current="page" to="/">Home</Link>
             </li>
-            {(localStorage.getItem("authToken")) &&
+            {Cookies.get("authToken") && // Check if authToken exists in Cookies
               <li className="nav-item">
                 <Link className="nav-link active fs-5" aria-current="page" to="/MyOrders">My Orders</Link>
               </li>
             }
           </ul>
-          {!localStorage.getItem("authToken") ?
+          {!Cookies.get("authToken") ? // Check if authToken exists in Cookies
             <div className='d-flex'>
               <Link className="btn bg-white text-success mx-1" to="/Login">Login</Link>
               <Link className="btn bg-white text-success mx-1" to="/Signup">Signup</Link>

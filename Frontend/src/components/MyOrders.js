@@ -1,50 +1,56 @@
-// MyOrders.js
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 
-export default function MyOrders() {
-  const [orders, setOrders] = useState([]);
+const MyOrders = () => {
+  const [lastOrder, setLastOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-
-  const fetchOrders = async () => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:4000/api/orders', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-      const json = await response.json();
-      if (json.success) {
-        setOrders(json.orders);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  // Fetch orders on component mount
   useEffect(() => {
-    fetchOrders();
+    const fetchLastOrder = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/api/myorders');
+        const data = await response.json();
+        if (data.success) {
+          setLastOrder(data.lastOrder);
+        } else {
+          // Handle error fetching last order
+          console.error('Error fetching last order:', data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching last order:', error);
+        // Handle error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLastOrder();
   }, []);
 
   return (
-    <div>
-      <h1>My Orders</h1>
-      <ul>
-        {orders.map((order, index) => (
-          <li key={index}>
-            Product: {order.productName} - Quantity: {order.quantity}
-          </li>
-        ))}
-      </ul>
-      <Link to="/">Back to Home</Link>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '20px', color: '#331800' }}>My Orders</h1>
+      {loading ? (
+        <p>Loading...</p>
+      ) : lastOrder ? (
+        <div style={{ backgroundColor: '#F6E8B1', padding: '20px', borderRadius: '10px' }}>
+          <h3 style={{ color: '#331800' }}>Order Details</h3>
+          <p style={{ color: '#331800' }}>Order ID: {lastOrder._id}</p>
+          <p style={{ color: '#331800' }}>Order Date: {new Date(lastOrder.orderDate).toLocaleString()}</p>
+          <h4 style={{ color: '#331800' }}>Order Items:</h4>
+          <ul>
+            {lastOrder.orderItems.map((item, index) => (
+              <li key={index} style={{ color: '#331800' }}>
+                Name: {item.name}, Quantity: {item.quantity}, Price: {item.price}
+              </li>
+            ))}
+          </ul>
+          <p style={{ color: '#331800' }}>Total Price: Rs. {lastOrder.totalPrice}/-</p>
+        </div>
+      ) : (
+        <p style={{ textAlign: 'center', color: '#331800', fontSize: '20px' }}>No orders found</p>
+      )}
     </div>
   );
-}
+};
+
+export default MyOrders;

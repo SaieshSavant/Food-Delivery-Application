@@ -1,9 +1,46 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { CartContext } from '../components/CartContext';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie'; // Import Cookies library
 
 export default function Cart() {
   const { cartItems, removeFromCart } = useContext(CartContext);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleOrderSubmit = async () => {
+    try {
+      setLoading(true);
+      
+
+      const orderData = {
+        userName: Cookies.get('userName'), // Retrieve username from cookies
+        orderItems: cartItems.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+        totalPrice: calculateTotalPrice()
+      };
+
+      const response = await fetch('http://localhost:4000/api/placeorder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${Cookies.get('authToken')}`
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        navigate('/MyOrders');
+      } else {
+        console.error('Failed to place order:', data.message);
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const calculateItemTotal = (item) => {
     return item.price;
@@ -54,7 +91,7 @@ export default function Cart() {
           </table>
           <h4 style={{ textAlign: 'left', marginTop: '20px' }}>Total Price: Rs. {calculateTotalPrice()}</h4>
           <button
-            onClick={() => console.log('Order Placed')}
+            onClick={handleOrderSubmit}
             style={{
               display: 'block',
               margin: '20px auto',
@@ -64,8 +101,9 @@ export default function Cart() {
               border: 'none',
               cursor: 'pointer',
             }}
+            disabled={loading}
           >
-            Place Order
+            {loading ? 'Placing Order...' : 'Place Order'}
           </button>
         </>
       )}
